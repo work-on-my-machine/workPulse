@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Web App - Login</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <!-- Heading -->
+            <div class="header">
+                <h1 id="form-title">Welcome Back</h1>
+
+                <p id="form-subtitle">
+                    Login to continue to your account
+                </p>
+            </div>
+
+            <div class="social-auth">
+                <button type="button" id="google-auth-button" class="google-btn">
+                    <span class="google-icon">G</span>
+                    Continue with Google
+                </button>
+            </div>
+
+            <div class="divider">
+                <span>or</span>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="login-email">
+                        Email
+                    </label>
+                    <input
+                        type="email"
+                        id="login-email"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+                <div class="input-group">
+
+                    <label for="login-password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="login-password"
+                        placeholder="Enter your password"
+                        required
+                    >
+
+                </div>
+
+
+                <button type="submit">
+                    Login
+                </button>
+
+            </form>
+
+
+            <!-- REGISTER FORM -->
+
+            <form id="register-form" class="hidden">
+
+                <div class="input-group">
+
+                    <label for="name">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Enter your name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="register-email">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="register-email"
+                        placeholder="Enter your email"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="register-password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="register-password"
+                        placeholder="Create a password"
+                        minlength="8"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="confirm-password">
+                        Confirm Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="confirm-password"
+                        placeholder="Confirm your password"
+                        required
+                    >
+
+                </div>
+                <button type="submit">
+                    Create Account
+                </button>
+            </form>
+
+
+            <!-- SWITCH LOGIN / REGISTER -->
+
+            <div class="switch">
+
+                <p id="switch-text">
+                    Don't have an account?
+                </p>
+
+                <button
+                    type="button"
+                    id="switch-button"
+                >
+                    Create Account
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        window.GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+    </script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>
+```

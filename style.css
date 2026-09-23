@@ -1,0 +1,258 @@
+/* Remove default browser spacing */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* Page */
+
+body {
+    font-family: Arial, sans-serif;
+
+    background: #0f172a;
+
+    color: white;
+
+    min-height: 100vh;
+}
+
+
+/* Main container */
+
+.container {
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 20px;
+}
+
+
+/* Login box */
+
+.auth-box {
+    width: 100%;
+
+    max-width: 420px;
+
+    background: #1e293b;
+
+    padding: 40px;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+
+/* Heading */
+
+.header {
+    text-align: center;
+
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 32px;
+
+    margin-bottom: 10px;
+}
+
+.header p {
+    color: #94a3b8;
+
+    font-size: 14px;
+}
+
+
+/* Input group */
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+
+/* Labels */
+
+.input-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 14px;
+
+    color: #cbd5e1;
+}
+
+
+/* Input fields */
+
+.input-group input {
+    width: 100%;
+
+    padding: 13px;
+
+    border: 1px solid #475569;
+
+    border-radius: 10px;
+
+    background: #0f172a;
+
+    color: white;
+
+    font-size: 15px;
+
+    outline: none;
+}
+
+
+/* Input focus */
+
+.input-group input:focus {
+    border-color: #818cf8;
+}
+
+
+/* Social auth */
+
+.social-auth {
+    margin-bottom: 18px;
+}
+
+.google-btn {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #475569;
+    border-radius: 10px;
+    background: #fff;
+    color: #1e293b;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.2s ease;
+}
+
+.google-btn:hover {
+    background: #f8fafc;
+}
+
+.google-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #94a3b8;
+    margin: 20px 0;
+    font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #334155;
+}
+
+.divider span {
+    padding: 0 12px;
+}
+
+/* Main button */
+
+form button {
+    width: 100%;
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #6366f1;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+
+/* Button hover */
+
+form button:hover {
+    background: #4f46e5;
+}
+
+
+/* Switch section */
+
+.switch {
+    text-align: center;
+
+    margin-top: 25px;
+
+    color: #94a3b8;
+
+    font-size: 14px;
+}
+
+
+/* Switch button */
+
+.switch button {
+    margin-top: 8px;
+
+    background: none;
+
+    border: none;
+
+    color: #818cf8;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.switch button:hover {
+    text-decoration: underline;
+}
+
+
+/* Hide register form */
+
+.hidden {
+    display: none;
+}
