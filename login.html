@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in | WorkPulse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body class="auth-page">
+    <main class="auth-layout">
+        <section class="auth-intro">
+            <a class="brand" href="index.html"><span class="brand-mark">W</span><span>workpulse</span></a>
+            <div class="intro-copy"><p class="eyebrow">Welcome back</p><h1>Pick up where you left off.</h1><p>Your latest announcements, policy changes and opportunities are waiting for you.</p></div>
+            <p class="auth-footer">Information you can act on.</p>
+        </section>
+        <section class="auth-panel" aria-labelledby="login-title">
+            <div class="auth-panel-top"><span>New to WorkPulse?</span><a href="register.html">Create user account <span>↗</span></a></div>
+            <div class="form-wrap">
+                <p class="eyebrow">Sign in</p>
+                <h2 id="login-title">Welcome back</h2>
+                <p class="form-subtitle">Sign in to see updates selected for you.</p>
+                <form id="login-form" novalidate>
+                    <div class="form-field"><label for="email">Work email</label><input id="email" type="email" placeholder="you@company.com" autocomplete="email" required></div>
+                    <div class="form-field"><label for="password">Password</label><input id="password" type="password" placeholder="Your password" autocomplete="current-password" required></div>
+                    <p class="form-message" id="form-message" role="alert"></p>
+                    <button class="primary-button submit-button" type="submit">Sign in <span>→</span></button>
+                </form>
+                <div class="admin-entry"><span>Are you an administrator?</span><a href="admin.html">Open admin portal <span>↗</span></a></div>
+            </div>
+        </section>
+    </main>
+    <script src="login.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create your WorkPulse account.">
+    <title>Create account | WorkPulse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body class="auth-page">
+    <main class="auth-layout">
+        <section class="auth-intro">
+            <a class="brand" href="index.html"><span class="brand-mark">W</span><span>workpulse</span></a>
+            <div class="intro-copy">
+                <p class="eyebrow">Your work, up to date</p>
+                <h1>Stay ready for what comes next.</h1>
+                <p>Get timely scheme announcements, policy changes and internal job opportunities in one calm, focused workspace.</p>
+                <div class="intro-points">
+                    <div><span>✦</span><p><strong>Relevant updates</strong><br>See the changes that matter to your role.</p></div>
+                    <div><span>↗</span><p><strong>Better opportunities</strong><br>Discover roles matched to your skills.</p></div>
+                </div>
+            </div>
+            <p class="auth-footer">Information you can act on.</p>
+        </section>
+
+        <section class="auth-panel" aria-labelledby="register-title">
+            <div class="auth-panel-top"><span>Already a member?</span><a href="index.html">View dashboard <span>↗</span></a></div>
+            <div class="form-wrap">
+                <p class="eyebrow">Get started</p>
+                <h2 id="register-title">Create your account</h2>
+                <p class="form-subtitle">Set up your profile to personalize your WorkPulse feed.</p>
+                <form id="register-form" novalidate>
+                    <div class="form-field"><label for="name">Full name</label><input id="name" name="name" type="text" autocomplete="name" required></div>
+                    <div class="form-field"><label for="email">Work email</label><input id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required></div>
+                    <div class="form-field"><label for="password">Password</label><input id="password" name="password" type="password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" required></div>
+                    <div class="form-field"><label for="confirm-password">Confirm password</label><input id="confirm-password" name="confirm-password" type="password" placeholder="Repeat your password" autocomplete="new-password" required></div>
+                    <label class="terms"><input id="terms" type="checkbox" required><span>I agree to receive relevant WorkPulse updates.</span></label>
+                    <p class="form-message" id="form-message" role="alert"></p>
+                    <button class="primary-button submit-button" type="submit">Create my account <span>→</span></button>
+                </form>
+                <p class="secure-note"><span>✓</span> Your account details are securely protected.</p>
+            </div>
+        </section>
+    </main>
+    <script src="register.js"></script>
+</body>
+</html>

@@ -10,6 +10,7 @@ const SCRYPT_COST = 16384;
 const SCRYPT_BLOCK_SIZE = 8;
 const SCRYPT_PARALLELIZATION = 1;
 const PASSWORD_PEPPER = process.env.PASSWORD_PEPPER || "local-development-pepper-change-me";
+const ADMIN_KEY = process.env.ADMIN_KEY || "local-workpulse-admin";
 
 if (!process.env.PASSWORD_PEPPER) {
   console.warn("PASSWORD_PEPPER is not set; configure it before deploying to production.");
@@ -82,14 +83,19 @@ function publicUser(user) {
   return { id: user.id, name: user.name, email: user.email };
 }
 
+function hashAdminKey(adminKey) {
+  return crypto.createHash("sha256").update(adminKey).digest("hex");
+}
+
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(express.static(__dirname));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(__dirname, "landing.html"));
 });
+
+app.use(express.static(__dirname));
 
 const db = mysql.createPool({
   host: "localhost",
@@ -126,6 +132,37 @@ const db = mysql.createPool({
       if (error.code !== "ER_DUP_FIELDNAME") {
         throw error;
       }
+    }
+
+    await initConn.query(`
+      CREATE TABLE IF NOT EXISTS announcements (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        type ENUM('job', 'announcement', 'policy') NOT NULL,
+        title VARCHAR(180) NOT NULL,
+        body TEXT NOT NULL,
+        department VARCHAR(100) NULL,
+        location VARCHAR(120) NULL,
+        deadline VARCHAR(80) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await initConn.query(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(150) NOT NULL UNIQUE,
+        admin_key_hash CHAR(64) NOT NULL UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    const [adminRows] = await initConn.query("SELECT id FROM admins LIMIT 1");
+    if (adminRows.length === 0) {
+      await initConn.query(
+        "INSERT INTO admins (name, email, admin_key_hash) VALUES (?, ?, ?)",
+        ["Primary Admin", "admin@workpulse.local", hashAdminKey(ADMIN_KEY)]
+      );
     }
 
     await initConn.end();
@@ -202,6 +239,127 @@ app.post("/api/google-auth", async (req, res) => {
     res.json({ success: true, mode: "register", userId: result.insertId });
   } catch (err) {
     res.status(500).json({ error: "Google authentication failed" });
+  }
+});
+
+async function getAdmin(req) {
+  const rawKey = req.get("x-admin-key");
+  if (!rawKey) return null;
+
+  const [rows] = await db.execute(
+    "SELECT id, name, email FROM admins WHERE admin_key_hash = ?",
+    [hashAdminKey(rawKey)]
+  );
+  return rows[0] || null;
+}
+
+app.get("/api/updates", async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      "SELECT id, type, title, body, department, location, deadline, created_at FROM announcements ORDER BY created_at DESC"
+    );
+    res.json({ updates: rows });
+  } catch (error) {
+    res.status(500).json({ error: "Could not load announcements" });
+  }
+});
+
+app.get("/api/admin/updates", async (req, res) => {
+  if (!await getAdmin(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  try {
+    const [rows] = await db.execute(
+      "SELECT id, type, title, body, department, location, deadline, created_at FROM announcements ORDER BY created_at DESC"
+    );
+    res.json({ updates: rows });
+  } catch (error) {
+    res.status(500).json({ error: "Could not load admin announcements" });
+  }
+});
+
+app.post("/api/admin/updates", async (req, res) => {
+  if (!await getAdmin(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  const { type, title, body, department, location, deadline } = req.body;
+  if (!['job', 'announcement', 'policy'].includes(type) || !title?.trim() || !body?.trim()) {
+    return res.status(400).json({ error: "Type, title, and details are required" });
+  }
+
+  try {
+    const [result] = await db.execute(
+      "INSERT INTO announcements (type, title, body, department, location, deadline) VALUES (?, ?, ?, ?, ?, ?)",
+      [type, title.trim(), body.trim(), department?.trim() || null, location?.trim() || null, deadline?.trim() || null]
+    );
+    res.status(201).json({ success: true, id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ error: "Could not publish announcement" });
+  }
+});
+
+app.delete("/api/admin/updates/:id", async (req, res) => {
+  if (!await getAdmin(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  try {
+    const [result] = await db.execute("DELETE FROM announcements WHERE id = ?", [req.params.id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Announcement not found" });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Could not remove announcement" });
+  }
+});
+
+app.get("/api/admin/profile", async (req, res) => {
+  const admin = await getAdmin(req);
+  if (!admin) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+  res.json({ admin });
+});
+
+app.get("/api/admin/admins", async (req, res) => {
+  if (!await getAdmin(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  try {
+    const [rows] = await db.execute(
+      "SELECT id, name, email, created_at FROM admins ORDER BY created_at ASC"
+    );
+    res.json({ admins: rows });
+  } catch (error) {
+    res.status(500).json({ error: "Could not load administrators" });
+  }
+});
+
+app.post("/api/admin/admins", async (req, res) => {
+  if (!await getAdmin(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  const { name, email, adminKey } = req.body;
+  if (!name?.trim() || !email?.trim() || typeof adminKey !== "string" || adminKey.length < 8) {
+    return res.status(400).json({ error: "Name, email, and an admin key of at least 8 characters are required" });
+  }
+
+  try {
+    const [result] = await db.execute(
+      "INSERT INTO admins (name, email, admin_key_hash) VALUES (?, ?, ?)",
+      [name.trim(), email.trim().toLowerCase(), hashAdminKey(adminKey)]
+    );
+    res.status(201).json({ success: true, id: result.insertId });
+  } catch (error) {
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ error: "That admin email or key is already in use" });
+    }
+    res.status(500).json({ error: "Could not add administrator" });
   }
 });
 

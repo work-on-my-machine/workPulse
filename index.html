@@ -1,177 +1,80 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>My Web App - Login</title>
-
+    <meta name="description" content="Stay current with employee schemes, policy updates and job opportunities.">
+    <title>WorkPulse | Your work, up to date</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <div class="container">
-        <div class="auth-box">
-            <!-- Heading -->
-            <div class="header">
-                <h1 id="form-title">Welcome Back</h1>
-
-                <p id="form-subtitle">
-                    Login to continue to your account
-                </p>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="#top"><span class="brand-mark">W</span><span>workpulse</span></a>
+            <p class="eyebrow sidebar-label">Workspace</p>
+            <nav class="main-nav" aria-label="Main navigation">
+                <a class="nav-item active" href="#top"><span>◈</span> Overview</a>
+                <a class="nav-item" href="#announcements"><span>◌</span> Announcements <b>4</b></a>
+                <a class="nav-item" href="#opportunities"><span>↗</span> Opportunities</a>
+                <a class="nav-item" href="#policies"><span>▤</span> Policy desk</a>
+                <a class="nav-item" href="#saved"><span>☆</span> Saved items</a>
+            </nav>
+            <div class="sidebar-note">
+                <span class="note-icon">✦</span>
+                <strong>Make your next move count.</strong>
+                <p>Complete your profile to get more relevant opportunities.</p>
+                <a class="text-button" href="register.html">Complete profile <span>→</span></a>
             </div>
+            <div class="sidebar-footer"><span class="status-dot"></span> Updates are live</div>
+        </aside>
 
-            <div class="social-auth">
-                <button type="button" id="google-auth-button" class="google-btn">
-                    <span class="google-icon">G</span>
-                    Continue with Google
-                </button>
+        <main class="main-content" id="top">
+            <header class="topbar">
+                <div class="mobile-brand"><span class="brand-mark">W</span> workpulse</div>
+                <div class="topbar-actions">
+                    <button class="icon-button" aria-label="Notifications">♢<span class="notification-dot"></span></button>
+                    <a class="profile-chip" id="account-link" href="login.html"><span class="avatar" id="profile-avatar">AM</span><span class="profile-name" id="profile-name">Sign in</span><span>↗</span></a>
+                </div>
+            </header>
+
+            <section class="welcome-row">
+                <div><p class="eyebrow" id="current-date">Tuesday, 23 September 2026</p><h1><span id="greeting">Good morning</span>, <span id="user-name">Aarav</span> <span class="wave">✦</span></h1><p class="welcome-copy">Here is what is changing in your work world today.</p></div>
+                <button class="primary-button" id="digest-button"><span>✧</span> Get my weekly digest</button>
+            </section>
+
+            <section class="stats-grid" aria-label="Your update summary">
+                <article class="stat-card accent-coral"><span class="stat-icon">◉</span><div><strong>12</strong><p>New this week</p></div><span class="stat-trend">+4</span></article>
+                <article class="stat-card accent-blue"><span class="stat-icon">↗</span><div><strong>28</strong><p>Open opportunities</p></div><span class="stat-trend">+8%</span></article>
+                <article class="stat-card accent-yellow"><span class="stat-icon">▤</span><div><strong>06</strong><p>Policy changes</p></div><span class="stat-trend">2 urgent</span></article>
+            </section>
+
+            <section class="toolbar" aria-label="Search and filter updates">
+                <div class="search-wrap"><span>⌕</span><input id="search-input" type="search" placeholder="Search announcements, jobs, policies..." aria-label="Search updates"></div>
+                <div class="filter-tabs" role="tablist"><button class="filter-tab active" data-filter="all">All updates</button><button class="filter-tab" data-filter="announcement">Announcements</button><button class="filter-tab" data-filter="job">Jobs</button><button class="filter-tab" data-filter="policy">Policies</button></div>
+            </section>
+
+            <div class="content-grid">
+                <section class="feed-section" id="announcements">
+                    <div class="section-heading"><div><p class="eyebrow">Stay informed</p><h2>Latest updates</h2></div><button class="ghost-button" id="clear-filters">Reset filters <span>↗</span></button></div>
+                    <div class="update-list" id="update-list"></div>
+                    <p class="empty-state hidden" id="empty-state">No updates match your search. Try a different keyword.</p>
+                </section>
+
+                <aside class="right-rail">
+                    <section class="rail-section" id="opportunities"><div class="section-heading compact"><div><p class="eyebrow">Recommended for you</p><h2>Open roles</h2></div><button class="round-arrow" aria-label="View all jobs">→</button></div><div id="job-list" class="job-list"></div></section>
+                    <section class="rail-section policy-section" id="policies"><div class="section-heading compact"><div><p class="eyebrow">Worth a read</p><h2>Policy desk</h2></div><span class="live-label"><i></i> Live</span></div><div class="policy-highlight"><span class="policy-number">01</span><div><strong>Paid parental leave expanded</strong><p>New eligibility rules take effect from 01 Oct 2026.</p><button class="text-button" data-detail="parental">Read the update <span>→</span></button></div></div></section>
+                    <section class="saved-section" id="saved"><div class="section-heading compact"><h2>Your saved items</h2><span id="saved-count">0</span></div><p id="saved-copy">Save an update to find it quickly later.</p><div id="saved-list" class="saved-list"></div></section>
+                </aside>
             </div>
-
-            <div class="divider">
-                <span>or</span>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <form id="login-form">
-                <div class="input-group">
-                    <label for="login-email">
-                        Email
-                    </label>
-                    <input
-                        type="email"
-                        id="login-email"
-                        placeholder="Enter your email"
-                        required
-                    >
-                </div>
-                <div class="input-group">
-
-                    <label for="login-password">
-                        Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="login-password"
-                        placeholder="Enter your password"
-                        required
-                    >
-
-                </div>
-
-
-                <button type="submit">
-                    Login
-                </button>
-
-            </form>
-
-
-            <!-- REGISTER FORM -->
-
-            <form id="register-form" class="hidden">
-
-                <div class="input-group">
-
-                    <label for="name">
-                        Full Name
-                    </label>
-
-                    <input
-                        type="text"
-                        id="name"
-                        placeholder="Enter your name"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="input-group">
-
-                    <label for="register-email">
-                        Email
-                    </label>
-
-                    <input
-                        type="email"
-                        id="register-email"
-                        placeholder="Enter your email"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="input-group">
-
-                    <label for="register-password">
-                        Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="register-password"
-                        placeholder="Create a password"
-                        minlength="8"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="input-group">
-
-                    <label for="confirm-password">
-                        Confirm Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="confirm-password"
-                        placeholder="Confirm your password"
-                        required
-                    >
-
-                </div>
-                <button type="submit">
-                    Create Account
-                </button>
-            </form>
-
-
-            <!-- SWITCH LOGIN / REGISTER -->
-
-            <div class="switch">
-
-                <p id="switch-text">
-                    Don't have an account?
-                </p>
-
-                <button
-                    type="button"
-                    id="switch-button"
-                >
-                    Create Account
-                </button>
-
-            </div>
-
-        </div>
-
+            <footer class="footer"><span>workpulse</span><span>Information you can act on.</span><span>Last synced 4 mins ago</span></footer>
+        </main>
     </div>
-
-
-    <script>
-        window.GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
-    </script>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="detail-drawer" id="detail-drawer" aria-hidden="true"><button class="close-button" id="close-drawer" aria-label="Close details">×</button><div id="drawer-content"></div></div>
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
     <script src="script.js"></script>
-
 </body>
-
 </html>
-```
