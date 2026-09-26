@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage WorkPulse administrators.">
+    <title>Administrators | WorkPulse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-page">
+    <header class="admin-topbar">
+        <a class="brand" href="admin.html"><span class="brand-mark">W</span><span>workpulse</span></a>
+        <div class="admin-topbar-right"><a class="home-button" href="admin.html"><span aria-hidden="true">⌂</span>Home</a><span class="admin-badge">Administrator setup</span><a href="admin.html" class="back-link">Publishing portal <span>↗</span></a></div>
+    </header>
+    <main class="admin-main administrator-main">
+        <section class="admin-login-panel" id="admin-login-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Administrator access</p><h1>Manage administrators.</h1><p>Sign in with your own admin key before creating another administrator.</p></div><span class="admin-lock">Private access</span></div>
+            <form id="admin-login-form" class="admin-login-form"><div class="form-field"><label for="admin-login-key">Your admin key</label><input id="admin-login-key" type="password" placeholder="Enter your admin key" autocomplete="off" required></div><p class="admin-message" id="admin-login-message" role="alert"></p><button class="primary-button publish-button" type="submit">Open access management <span>→</span></button></form>
+        </section>
+        <div id="admin-management" class="hidden">
+            <section class="admin-heading"><div><p class="eyebrow">Access management</p><h1>Build your admin team.</h1><p id="signed-in-admin">Create individual access for every administrator.</p></div><div class="admin-status"><span></span> Keys are private</div></section>
+            <section class="admins-panel administrators-panel">
+                <div class="panel-heading"><div><p class="eyebrow">New administrator</p><h2>Create an admin account</h2></div><span class="admin-lock">Unique key required</span></div>
+                <form id="add-admin-form" class="add-admin-form">
+                    <div class="two-fields"><div class="form-field"><label for="new-admin-name">Full name</label><input id="new-admin-name" placeholder="Administrator name" required></div><div class="form-field"><label for="new-admin-email">Email</label><input id="new-admin-email" type="email" placeholder="admin@company.com" required></div></div>
+                    <div class="form-field"><label for="new-admin-key">Admin key</label><input id="new-admin-key" type="password" minlength="8" placeholder="Enter a unique key, at least 8 characters" required><small>This key is stored in the database and must be unique.</small></div>
+                    <p class="admin-message" id="add-admin-message" role="alert"></p>
+                    <a id="created-admin-login" class="secondary-button" href="admin.html" hidden>Sign in as this administrator <span>→</span></a>
+                    <button class="secondary-button" type="submit">Create administrator <span>→</span></button>
+                </form>
+            </section>
+            <section class="admins-panel administrator-roster"><div class="panel-heading"><div><p class="eyebrow">Directory</p><h2>Current administrators</h2></div><span class="published-count" id="admins-count">0</span></div><div id="admins-list" class="admins-list"></div></section>
+        </div>
+    </main>
+    <script src="administrators.js"></script>
+</body>
+</html>
