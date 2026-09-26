@@ -4,6 +4,8 @@
   "description": "",
   "main": "script.js",
   "scripts": {
+    "start": "node server.js",
+    "start:access": "node access-management-server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

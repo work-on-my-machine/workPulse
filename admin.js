@@ -2,26 +2,23 @@ const form = document.getElementById("publish-form");
 const message = document.getElementById("admin-message");
 const list = document.getElementById("published-list");
 const count = document.getElementById("published-count");
-const keyInput = document.getElementById("admin-key");
 const submitButton = form.querySelector("button[type='submit']");
-const addAdminForm = document.getElementById("add-admin-form");
-const addAdminMessage = document.getElementById("add-admin-message");
-const adminsList = document.getElementById("admins-list");
+const adminLoginForm = document.getElementById("admin-login-form");
+const adminLoginKey = document.getElementById("admin-login-key");
+const adminLoginMessage = document.getElementById("admin-login-message");
+const adminLoginPanel = document.getElementById("admin-login-panel");
+const adminWorkspace = document.getElementById("admin-workspace");
+const adminLogoutButton = document.getElementById("admin-logout");
 let adminKey = sessionStorage.getItem("workpulse-admin-key") || "";
-
-if (adminKey) {
-  keyInput.value = adminKey;
-  loadPublished();
-  loadAdmins();
-}
 
 function setMessage(text, isSuccess = false) {
   message.className = `admin-message${isSuccess ? " success" : ""}`;
   message.textContent = text;
 }
 
-function formatType(type) {
-  return type === "job" ? "Hiring opportunity" : type === "policy" ? "Policy update" : "Announcement";
+function setLoginMessage(text, isSuccess = false) {
+  adminLoginMessage.className = `admin-message${isSuccess ? " success" : ""}`;
+  adminLoginMessage.textContent = text;
 }
 
 async function readResponse(response) {
@@ -32,6 +29,10 @@ async function readResponse(response) {
   } catch (error) {
     throw new Error(text.replace(/^Forbidden:\s*/i, "") || `Request failed (${response.status})`);
   }
+}
+
+function formatType(type) {
+  return type === "job" ? "Hiring opportunity" : type === "policy" ? "Policy update" : "Announcement";
 }
 
 function renderPublished(updates) {
@@ -46,46 +47,79 @@ function renderPublished(updates) {
 }
 
 async function loadPublished() {
+  const response = await fetch("/api/admin/updates", { headers: { "x-admin-key": adminKey } });
+  const data = await readResponse(response);
+  if (!response.ok) throw new Error(data.error || "Invalid admin key");
+  renderPublished(data.updates);
+}
+
+async function openWorkspace(data) {
+  sessionStorage.setItem("workpulse-admin-key", adminKey);
+  adminLoginPanel.classList.add("hidden");
+  adminWorkspace.classList.remove("hidden");
+  adminLogoutButton.classList.remove("hidden");
+  document.getElementById("signed-in-admin").textContent = `Signed in as ${data.admin.name}`;
   try {
-    const response = await fetch("/api/admin/updates", { headers: { "x-admin-key": adminKey } });
-    const data = await readResponse(response);
-    if (!response.ok) throw new Error(data.error || "Invalid admin key");
-    renderPublished(data.updates);
+    await loadPublished();
   } catch (error) {
-    sessionStorage.removeItem("workpulse-admin-key");
-    keyInput.value = "";
-    renderPublished([]);
     setMessage(error.message);
   }
 }
 
-function setAdminMessage(text, isSuccess = false) {
-  addAdminMessage.className = `admin-message${isSuccess ? " success" : ""}`;
-  addAdminMessage.textContent = text;
-}
-
-async function loadAdmins() {
+async function verifyAdmin() {
   try {
-    const response = await fetch("/api/admin/admins", { headers: { "x-admin-key": adminKey } });
+    const response = await fetch("/api/admin/profile", { headers: { "x-admin-key": adminKey } });
     const data = await readResponse(response);
-    if (!response.ok) throw new Error(data.error || "Could not load administrators");
-    adminsList.innerHTML = data.admins.map((admin) => {
-      const initials = admin.name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-      return `<article class="admin-item"><span class="admin-avatar">${initials}</span><div><strong>${admin.name}</strong><p>${admin.email}</p></div></article>`;
-    }).join("");
+    if (!response.ok) throw new Error(data.error || "Invalid admin key");
+    await openWorkspace(data);
   } catch (error) {
-    adminsList.innerHTML = `<p class="empty-admin">${error.message}</p>`;
+    sessionStorage.removeItem("workpulse-admin-key");
+    adminKey = "";
+    adminLoginPanel.classList.remove("hidden");
+    adminWorkspace.classList.add("hidden");
+    adminLogoutButton.classList.add("hidden");
+    setLoginMessage(error.message);
   }
 }
+
+adminLoginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  adminKey = adminLoginKey.value.trim();
+  if (!adminKey) {
+    setLoginMessage("Enter your admin key.");
+    return;
+  }
+  const button = adminLoginForm.querySelector("button[type='submit']");
+  button.disabled = true;
+  setLoginMessage("");
+  try {
+    const response = await fetch("/api/admin/profile", { headers: { "x-admin-key": adminKey } });
+    const data = await readResponse(response);
+    if (!response.ok) throw new Error(data.error || "Invalid admin key");
+    await openWorkspace(data);
+  } catch (error) {
+    adminKey = "";
+    setLoginMessage(error.message);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+adminLogoutButton.addEventListener("click", () => {
+  sessionStorage.removeItem("workpulse-admin-key");
+  adminKey = "";
+  adminWorkspace.classList.add("hidden");
+  adminLoginPanel.classList.remove("hidden");
+  adminLogoutButton.classList.add("hidden");
+  adminLoginForm.reset();
+  list.innerHTML = '<p class="empty-admin">Enter your admin key to view published updates.</p>';
+  count.textContent = "0";
+  setMessage("");
+  setLoginMessage("You have been signed out.", true);
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  adminKey = keyInput.value.trim();
-  if (!adminKey) {
-    setMessage("Enter your admin key to publish.");
-    return;
-  }
-
   submitButton.disabled = true;
   submitButton.innerHTML = "Publishing...";
   const payload = {
@@ -105,50 +139,14 @@ form.addEventListener("submit", async (event) => {
     });
     const data = await readResponse(response);
     if (!response.ok) throw new Error(data.error || "Could not publish update");
-    sessionStorage.setItem("workpulse-admin-key", adminKey);
     setMessage("Published. It is now available on the employee dashboard.", true);
     form.reset();
-    keyInput.value = adminKey;
     await loadPublished();
-    await loadAdmins();
   } catch (error) {
     setMessage(error.message);
   } finally {
     submitButton.disabled = false;
     submitButton.innerHTML = "<span>✦</span> Publish update";
-  }
-});
-
-addAdminForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  adminKey = keyInput.value.trim() || adminKey;
-  if (!adminKey) {
-    setAdminMessage("Enter your current admin key above first.");
-    return;
-  }
-
-  const button = addAdminForm.querySelector("button[type='submit']");
-  button.disabled = true;
-  setAdminMessage("");
-  try {
-    const response = await fetch("/api/admin/admins", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
-      body: JSON.stringify({
-        name: document.getElementById("new-admin-name").value.trim(),
-        email: document.getElementById("new-admin-email").value.trim(),
-        adminKey: document.getElementById("new-admin-key").value
-      })
-    });
-    const data = await readResponse(response);
-    if (!response.ok) throw new Error(data.error || "Could not add administrator");
-    setAdminMessage("Administrator added. Share their key securely.", true);
-    addAdminForm.reset();
-    await loadAdmins();
-  } catch (error) {
-    setAdminMessage(error.message);
-  } finally {
-    button.disabled = false;
   }
 });
 
@@ -164,3 +162,5 @@ document.addEventListener("click", async (event) => {
   if (!response.ok) setMessage(data.error || "Could not delete update");
   else await loadPublished();
 });
+
+if (adminKey) verifyAdmin();

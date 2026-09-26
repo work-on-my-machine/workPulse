@@ -11,6 +11,8 @@ const SCRYPT_BLOCK_SIZE = 8;
 const SCRYPT_PARALLELIZATION = 1;
 const PASSWORD_PEPPER = process.env.PASSWORD_PEPPER || "local-development-pepper-change-me";
 const ADMIN_KEY = process.env.ADMIN_KEY || "local-workpulse-admin";
+const ACCESS_ADMIN_ID = process.env.ACCESS_ADMIN_ID || "admin";
+const ACCESS_ADMIN_PASSWORD = process.env.ACCESS_ADMIN_PASSWORD || "sameer.2005";
 
 if (!process.env.PASSWORD_PEPPER) {
   console.warn("PASSWORD_PEPPER is not set; configure it before deploying to production.");
@@ -87,12 +89,21 @@ function hashAdminKey(adminKey) {
   return crypto.createHash("sha256").update(adminKey).digest("hex");
 }
 
+function hasAccessCredentials(req) {
+  return req.get("x-access-admin-id") === ACCESS_ADMIN_ID
+    && req.get("x-access-admin-password") === ACCESS_ADMIN_PASSWORD;
+}
+
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landing.html"));
+});
+
+app.get("/access-management.html", (req, res) => {
+  res.status(404).send("Start the separate access-management server with npm run start:access.");
 });
 
 app.use(express.static(__dirname));
@@ -137,6 +148,7 @@ const db = mysql.createPool({
     await initConn.query(`
       CREATE TABLE IF NOT EXISTS announcements (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        admin_id INT NULL,
         type ENUM('job', 'announcement', 'policy') NOT NULL,
         title VARCHAR(180) NOT NULL,
         body TEXT NOT NULL,
@@ -147,22 +159,57 @@ const db = mysql.createPool({
       )
     `);
 
+    try {
+      await initConn.query("ALTER TABLE announcements ADD COLUMN admin_id INT NULL");
+    } catch (error) {
+      if (error.code !== "ER_DUP_FIELDNAME") {
+        throw error;
+      }
+    }
+
     await initConn.query(`
       CREATE TABLE IF NOT EXISTS admins (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         email VARCHAR(150) NOT NULL UNIQUE,
-        admin_key_hash CHAR(64) NOT NULL UNIQUE,
+        admin_key VARCHAR(255) NULL UNIQUE,
+        admin_key_hash CHAR(64) NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
+    try {
+      await initConn.query("ALTER TABLE admins ADD COLUMN admin_key VARCHAR(255) NULL UNIQUE");
+    } catch (error) {
+      if (error.code !== "ER_DUP_FIELDNAME") {
+        throw error;
+      }
+    }
+
+    try {
+      await initConn.query("ALTER TABLE admins MODIFY COLUMN admin_key_hash CHAR(64) NULL");
+    } catch (error) {
+      if (error.code !== "ER_BAD_FIELD_ERROR") {
+        throw error;
+      }
+    }
+
     const [adminRows] = await initConn.query("SELECT id FROM admins LIMIT 1");
     if (adminRows.length === 0) {
       await initConn.query(
-        "INSERT INTO admins (name, email, admin_key_hash) VALUES (?, ?, ?)",
-        ["Primary Admin", "admin@workpulse.local", hashAdminKey(ADMIN_KEY)]
+        "INSERT INTO admins (name, email, admin_key) VALUES (?, ?, ?)",
+        ["Primary Admin", "admin@workpulse.local", ADMIN_KEY]
       );
+    }
+
+    await initConn.query(
+      "UPDATE admins SET admin_key = ?, admin_key_hash = NULL WHERE email = ?",
+      [ADMIN_KEY, "admin@workpulse.local"]
+    );
+
+    const [primaryAdminRows] = await initConn.query("SELECT id FROM admins ORDER BY id ASC LIMIT 1");
+    if (primaryAdminRows.length > 0) {
+      await initConn.query("UPDATE announcements SET admin_id = ? WHERE admin_id IS NULL", [primaryAdminRows[0].id]);
     }
 
     await initConn.end();
@@ -247,8 +294,8 @@ async function getAdmin(req) {
   if (!rawKey) return null;
 
   const [rows] = await db.execute(
-    "SELECT id, name, email FROM admins WHERE admin_key_hash = ?",
-    [hashAdminKey(rawKey)]
+    "SELECT id, name, email FROM admins WHERE admin_key = ? OR (admin_key IS NULL AND admin_key_hash = ?)",
+    [rawKey, hashAdminKey(rawKey)]
   );
   return rows[0] || null;
 }
@@ -265,13 +312,15 @@ app.get("/api/updates", async (req, res) => {
 });
 
 app.get("/api/admin/updates", async (req, res) => {
-  if (!await getAdmin(req)) {
+  const admin = await getAdmin(req);
+  if (!admin) {
     return res.status(401).json({ error: "Admin access required" });
   }
 
   try {
     const [rows] = await db.execute(
-      "SELECT id, type, title, body, department, location, deadline, created_at FROM announcements ORDER BY created_at DESC"
+      "SELECT id, type, title, body, department, location, deadline, created_at FROM announcements WHERE admin_id = ? ORDER BY created_at DESC",
+      [admin.id]
     );
     res.json({ updates: rows });
   } catch (error) {
@@ -280,7 +329,8 @@ app.get("/api/admin/updates", async (req, res) => {
 });
 
 app.post("/api/admin/updates", async (req, res) => {
-  if (!await getAdmin(req)) {
+  const admin = await getAdmin(req);
+  if (!admin) {
     return res.status(401).json({ error: "Admin access required" });
   }
 
@@ -291,8 +341,8 @@ app.post("/api/admin/updates", async (req, res) => {
 
   try {
     const [result] = await db.execute(
-      "INSERT INTO announcements (type, title, body, department, location, deadline) VALUES (?, ?, ?, ?, ?, ?)",
-      [type, title.trim(), body.trim(), department?.trim() || null, location?.trim() || null, deadline?.trim() || null]
+      "INSERT INTO announcements (admin_id, type, title, body, department, location, deadline) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [admin.id, type, title.trim(), body.trim(), department?.trim() || null, location?.trim() || null, deadline?.trim() || null]
     );
     res.status(201).json({ success: true, id: result.insertId });
   } catch (error) {
@@ -301,12 +351,13 @@ app.post("/api/admin/updates", async (req, res) => {
 });
 
 app.delete("/api/admin/updates/:id", async (req, res) => {
-  if (!await getAdmin(req)) {
+  const admin = await getAdmin(req);
+  if (!admin) {
     return res.status(401).json({ error: "Admin access required" });
   }
 
   try {
-    const [result] = await db.execute("DELETE FROM announcements WHERE id = ?", [req.params.id]);
+    const [result] = await db.execute("DELETE FROM announcements WHERE id = ? AND admin_id = ?", [req.params.id, admin.id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Announcement not found" });
     }
@@ -324,8 +375,15 @@ app.get("/api/admin/profile", async (req, res) => {
   res.json({ admin });
 });
 
+app.get("/api/admin/access-profile", async (req, res) => {
+  if (!hasAccessCredentials(req)) {
+    return res.status(401).json({ error: "Access-management authentication required" });
+  }
+  res.json({ admin: { name: "Access administrator", email: ACCESS_ADMIN_ID } });
+});
+
 app.get("/api/admin/admins", async (req, res) => {
-  if (!await getAdmin(req)) {
+  if (!await getAdmin(req) && !hasAccessCredentials(req)) {
     return res.status(401).json({ error: "Admin access required" });
   }
 
@@ -351,8 +409,8 @@ app.post("/api/admin/admins", async (req, res) => {
 
   try {
     const [result] = await db.execute(
-      "INSERT INTO admins (name, email, admin_key_hash) VALUES (?, ?, ?)",
-      [name.trim(), email.trim().toLowerCase(), hashAdminKey(adminKey)]
+      "INSERT INTO admins (name, email, admin_key) VALUES (?, ?, ?)",
+      [name.trim(), email.trim().toLowerCase(), adminKey]
     );
     res.status(201).json({ success: true, id: result.insertId });
   } catch (error) {
@@ -365,4 +423,88 @@ app.post("/api/admin/admins", async (req, res) => {
 
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
+});
+
+app.get("/api/admin/users", async (req, res) => {
+  if (!hasAccessCredentials(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  try {
+    const [rows] = await db.execute("SELECT id, name, email FROM users ORDER BY id DESC");
+    res.json({ users: rows });
+  } catch (error) {
+    res.status(500).json({ error: "Could not load users" });
+  }
+});
+
+app.get("/api/admin/moderation/updates", async (req, res) => {
+  if (!hasAccessCredentials(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  try {
+    const [rows] = await db.execute(`
+      SELECT announcements.id, announcements.type, announcements.title, announcements.body,
+        announcements.department, announcements.location, announcements.deadline,
+        announcements.created_at, admins.name AS admin_name
+      FROM announcements
+      LEFT JOIN admins ON admins.id = announcements.admin_id
+      ORDER BY announcements.created_at DESC
+    `);
+    res.json({ updates: rows });
+  } catch (error) {
+    res.status(500).json({ error: "Could not load moderation content" });
+  }
+});
+
+app.delete("/api/admin/admins/:id", async (req, res) => {
+  if (!hasAccessCredentials(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+  if (Number(req.params.id) === 1) {
+    return res.status(400).json({ error: "The primary administrator cannot be removed" });
+  }
+
+  try {
+    const [result] = await db.execute("DELETE FROM admins WHERE id = ?", [req.params.id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Administrator not found" });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Could not remove administrator" });
+  }
+});
+
+app.delete("/api/admin/users/:id", async (req, res) => {
+  if (!hasAccessCredentials(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  try {
+    const [result] = await db.execute("DELETE FROM users WHERE id = ?", [req.params.id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Could not remove user" });
+  }
+});
+
+app.delete("/api/admin/moderation/updates/:id", async (req, res) => {
+  if (!hasAccessCredentials(req)) {
+    return res.status(401).json({ error: "Admin access required" });
+  }
+
+  try {
+    const [result] = await db.execute("DELETE FROM announcements WHERE id = ?", [req.params.id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Content not found" });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Could not remove content" });
+  }
 });

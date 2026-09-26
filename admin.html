@@ -14,16 +14,20 @@
 </head>
 <body class="admin-page">
     <header class="admin-topbar">
-        <a class="brand" href="index.html"><span class="brand-mark">W</span><span>workpulse</span></a>
-        <div class="admin-topbar-right"><span class="admin-badge">Admin portal</span><a href="index.html" class="back-link">View dashboard <span>↗</span></a></div>
+        <a class="brand" href="admin.html"><span class="brand-mark">W</span><span>workpulse</span></a>
+        <div class="admin-topbar-right"><a class="home-button" href="/"><span aria-hidden="true">⌂</span>Home</a><button class="home-button hidden" id="admin-logout" type="button">Log out</button><span class="admin-badge">Admin portal</span><a href="administrators.html" class="back-link">Manage administrators <span>↗</span></a></div>
     </header>
     <main class="admin-main">
-        <section class="admin-heading"><div><p class="eyebrow">Content workspace</p><h1>Publish what matters.</h1><p>Share hiring opportunities, employee announcements and policy updates with your team.</p></div><div class="admin-status"><span></span> Publishing is live</div></section>
-        <div class="admin-grid">
+        <section class="admin-login-panel" id="admin-login-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Administrator access</p><h1>Sign in to your workspace.</h1><p>Use your individual admin key to manage your announcements.</p></div><span class="admin-lock">Private access</span></div>
+            <form id="admin-login-form" class="admin-login-form"><div class="form-field"><label for="admin-login-key">Admin key</label><input id="admin-login-key" type="password" placeholder="Enter your admin key" autocomplete="off" required></div><p class="admin-message" id="admin-login-message" role="alert"></p><button class="primary-button publish-button" type="submit">Sign in to admin portal <span>→</span></button></form>
+        </section>
+        <div id="admin-workspace" class="hidden">
+            <section class="admin-heading"><div><p class="eyebrow">Content workspace</p><h1>Publish what matters.</h1><p>Share hiring opportunities, employee announcements and policy updates with your team.</p></div><div class="admin-status"><span></span> <span id="signed-in-admin">Publishing is live</span></div></section>
+            <div class="admin-grid">
             <section class="publish-panel">
                 <div class="panel-heading"><div><p class="eyebrow">Create a post</p><h2>New update</h2></div><span class="step-label">01 / 01</span></div>
                 <form id="publish-form">
-                    <div class="form-field"><label for="admin-key">Admin key</label><input id="admin-key" type="password" placeholder="Enter your admin key" autocomplete="off" required><small>Set the <code>ADMIN_KEY</code> environment variable in production.</small></div>
                     <div class="form-field"><label for="type">What are you publishing?</label><select id="type"><option value="job">Hiring opportunity</option><option value="announcement">Employee announcement</option><option value="policy">Policy update</option></select></div>
                     <div class="form-field"><label for="title">Headline</label><input id="title" maxlength="180" placeholder="e.g. Senior Product Analyst role is now open" required></div>
                     <div class="form-field"><label for="body">Details</label><textarea id="body" rows="5" placeholder="Write the useful details your employees need to know..." required></textarea></div>
@@ -34,20 +38,8 @@
                 </form>
             </section>
             <section class="published-panel"><div class="panel-heading"><div><p class="eyebrow">Your newsroom</p><h2>Published updates</h2></div><span class="published-count" id="published-count">0</span></div><div id="published-list" class="published-list"><p class="empty-admin">Enter your admin key to view published updates.</p></div></section>
-        </div>
-        <section class="admins-panel">
-            <div class="panel-heading"><div><p class="eyebrow">Access management</p><h2>Administrators</h2></div><span class="admin-lock">Keys are private</span></div>
-            <div class="admins-grid">
-                <form id="add-admin-form" class="add-admin-form">
-                    <p class="admin-form-title">Add another administrator</p>
-                    <div class="two-fields"><div class="form-field"><label for="new-admin-name">Full name</label><input id="new-admin-name" placeholder="Administrator name" required></div><div class="form-field"><label for="new-admin-email">Email</label><input id="new-admin-email" type="email" placeholder="admin@company.com" required></div></div>
-                    <div class="form-field"><label for="new-admin-key">Unique admin key</label><input id="new-admin-key" type="password" minlength="8" placeholder="At least 8 characters" required></div>
-                    <p class="admin-message" id="add-admin-message" role="alert"></p>
-                    <button class="secondary-button" type="submit">Add administrator <span>→</span></button>
-                </form>
-                <div id="admins-list" class="admins-list"><p class="empty-admin">Authenticate above to view administrators.</p></div>
             </div>
-        </section>
+        </div>
     </main>
     <script src="admin.js"></script>
 </body>

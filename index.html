@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Stay current with employee schemes, policy updates and job opportunities.">
     <title>WorkPulse | Your work, up to date</title>
+    <script>
+        if (!localStorage.getItem("workpulse-user")) window.location.replace("login.html");
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -29,6 +32,7 @@
             <header class="topbar">
                 <div class="mobile-brand"><span class="brand-mark">W</span> workpulse</div>
                 <div class="topbar-actions">
+                    <a class="home-button" href="/"><span aria-hidden="true">⌂</span>Home</a>
                     <button class="icon-button" aria-label="Notifications">♢<span class="notification-dot"></span></button>
                     <a class="profile-chip" id="account-link" href="login.html"><span class="avatar" id="profile-avatar">AM</span><span class="profile-name" id="profile-name">Sign in</span><span>↗</span></a>
                 </div>

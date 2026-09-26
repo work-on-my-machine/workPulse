@@ -2,6 +2,9 @@
 .auth-layout { display: grid; grid-template-columns: minmax(340px, .9fr) minmax(460px, 1.1fr); min-height: 100vh; }
 .auth-intro { background: var(--navy); color: white; display: flex; flex-direction: column; padding: 38px 8%; }
 .auth-intro .brand { color: white; }
+.auth-brand-row { align-items: center; display: flex; justify-content: space-between; }
+.auth-intro .home-button { background: transparent; border-color: rgba(255,255,255,.3); color: white; }
+.auth-intro .home-button:hover { background: rgba(255,255,255,.1); }
 .intro-copy { margin: auto 0; max-width: 430px; }
 .intro-copy .eyebrow { color: #a9bec9; }
 .intro-copy h1 { color: white; font-size: clamp(34px, 4vw, 54px); line-height: 1.03; margin: 15px 0 20px; max-width: 390px; }

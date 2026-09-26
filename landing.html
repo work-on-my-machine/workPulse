@@ -14,7 +14,7 @@
 <body class="landing-page">
     <header class="landing-header">
         <a class="brand" href="/"><span class="brand-mark">W</span><span>workpulse</span></a>
-        <a class="landing-login" href="login.html">Already registered? <strong>Sign in <span>↗</span></strong></a>
+        <div class="landing-actions"><a class="home-button" href="/"><span aria-hidden="true">⌂</span>Home</a><a class="landing-login" href="login.html">Already registered? <strong>Sign in <span>↗</span></strong></a></div>
     </header>
     <main class="landing-main">
         <section class="landing-intro">
@@ -23,15 +23,20 @@
             <p>Stay current with employee schemes, policy changes and opportunities, all in one place.</p>
         </section>
         <section class="role-grid" aria-label="Choose your workspace">
-            <a class="role-card user-role" href="register.html">
+            <a class="role-card user-role" href="index.html">
                 <div class="role-top"><span class="role-icon">◎</span><span class="role-arrow">↗</span></div>
-                <div><p class="eyebrow">For employees</p><h2>Join as a user</h2><p>Create your profile to receive relevant announcements, discover opportunities and keep track of policy changes.</p></div>
-                <span class="role-action">Create user account <span>→</span></span>
+                <div><p class="eyebrow">For employees</p><h2>User dashboard</h2><p>See all published hiring opportunities, announcements, and policy updates in one place.</p></div>
+                <span class="role-action">View published updates <span>→</span></span>
             </a>
             <a class="role-card admin-role" href="admin.html">
                 <div class="role-top"><span class="role-icon">▤</span><span class="role-arrow">↗</span></div>
                 <div><p class="eyebrow">For people teams</p><h2>Open admin portal</h2><p>Publish hiring opportunities, employee announcements and policy updates for your organisation.</p></div>
                 <span class="role-action">Go to admin portal <span>→</span></span>
+            </a>
+            <a class="role-card developer-role" href="http://localhost:3001/access-management.html">
+                <div class="role-top"><span class="role-icon">⌘</span><span class="role-arrow">↗</span></div>
+                <div><p class="eyebrow">For developer team</p><h2>Administrator controls</h2><p>Manage user access, admin access, and remove misleading published content.</p></div>
+                <span class="role-action">Open developer controls <span>→</span></span>
             </a>
         </section>
         <p class="landing-note"><span>✦</span> Information you can act on, shared with the right people.</p>

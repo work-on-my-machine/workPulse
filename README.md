@@ -65,10 +65,11 @@ flowchart TD
 
 ### Landing page
 
-The root URL provides two workspace choices:
+The root URL provides three workspace choices:
 
-- **Join as a user**: opens the user registration page.
-- **Open admin portal**: opens the administrator publishing portal.
+- **User dashboard**: shows all published hiring opportunities, announcements, and policies.
+- **Admin portal**: allows people-team admins to publish jobs, announcements, and policies.
+- **Administrator controls**: developer-team-only access for removing users, admins, and misleading content.
 
 ### User experience
 
@@ -92,18 +93,31 @@ Saved items and the signed-in user profile are stored in browser `localStorage` 
 
 The admin portal is available at `/admin.html`.
 
+The portal first asks for the administrator's individual key. After successful authentication, the admin sees only announcements published by that admin. The signed-in admin can publish, review, and delete their own updates.
+
+The separate `/access-management.html` page requires the access administrator credentials:
+
+- Admin ID: `admin`
+- Password: `sameer,2005`
+
+These credentials are configurable with `ACCESS_ADMIN_ID` and `ACCESS_ADMIN_PASSWORD` environment variables.
+
 Administrators can:
 
 - Publish hiring opportunities.
 - Publish employee announcements.
 - Publish policy updates.
 - Add department, location, and deadline/effective-date information.
-- View published updates.
-- Delete published updates.
+- View their own published updates.
+- Delete their own published updates.
 - Add additional administrators.
 - View the administrator roster.
+- Remove another administrator's access.
+- Remove registered users.
+- Review all published content for moderation.
+- Remove misleading jobs, announcements, or policy updates.
 
-Each administrator has a separate name, email address, and admin key. Admin keys are stored in the database as SHA-256 hashes and are never displayed in the administrator roster.
+Each administrator has a separate name, email address, and admin key. Admin keys are stored directly in the database and must be unique. Keys are never displayed in the administrator roster.
 
 ## Routes
 
@@ -114,6 +128,8 @@ Each administrator has a separate name, email address, and admin key. Admin keys
 | `/register.html` | User registration |
 | `/login.html` | User sign-in |
 | `/admin.html` | Admin publishing and administrator management |
+| `/administrators.html` | Administrator creation and roster page |
+| `/access-management.html` | Dedicated page for removing admin access, users, and misleading content |
 
 ## Requirements
 
@@ -129,19 +145,31 @@ Install dependencies:
 npm install
 ```
 
-Start MySQL, then start the application from the project directory:
+Start MySQL, then start the main application in one terminal:
 
 ```powershell
-node server.js
+npm start
 ```
 
-The application runs at:
+The main application runs at:
 
 ```text
 http://localhost:3000/
 ```
 
-Only one terminal is required for the Node.js application. MySQL runs separately as a Windows service or database process.
+To use access management, open a second terminal in the project directory and start its page server:
+
+```powershell
+npm run start:access
+```
+
+Open the page at:
+
+```text
+http://localhost:3001/access-management.html
+```
+
+The access-management page runs separately, but uses the main application's API and database. Keep both Node.js terminals running while using it. MySQL runs separately as a Windows service or database process.
 
 ## Local admin access
 
@@ -197,6 +225,11 @@ Available endpoints:
 - `DELETE /api/admin/updates/:id` removes an update.
 - `GET /api/admin/admins` returns the administrator roster.
 - `POST /api/admin/admins` creates another administrator.
+- `DELETE /api/admin/admins/:id` removes another administrator's access. An admin cannot remove their own access.
+- `GET /api/admin/users` returns registered users.
+- `DELETE /api/admin/users/:id` removes a registered user.
+- `GET /api/admin/moderation/updates` returns all published content for moderation.
+- `DELETE /api/admin/moderation/updates/:id` removes published content from the app.
 
 Example publish request:
 
@@ -223,7 +256,9 @@ The server creates the `app_db` database and these tables when it starts:
 
 - `users`: registered employee accounts.
 - `announcements`: published jobs, announcements, and policies.
-- `admins`: administrator identities and hashed admin keys.
+- `admins`: administrator identities and unique admin keys.
+
+Each announcement stores the owning `admin_id`, which keeps administrator newsroom views separate.
 
 The current local MySQL connection is configured in `server.js`. Before production use, move database credentials and secrets to environment variables, set a strong `PASSWORD_PEPPER`, use HTTPS, and replace the simple admin-key header with a full authenticated admin session.
 
@@ -234,7 +269,9 @@ The current local MySQL connection is configured in `server.js`. Before producti
 - `index.html` / `style.css` / `script.js`: employee dashboard.
 - `register.html` / `register.js`: user registration.
 - `login.html` / `login.js`: user sign-in.
-- `admin.html` / `admin.css` / `admin.js`: admin portal.
+- `admin.html` / `admin.css` / `admin.js`: admin publishing portal.
+- `administrators.html` / `administrators.js`: administrator creation and roster page.
+- `access-management.html` / `access-management.js`: dedicated removal and moderation page.
 - `package.json`: Node.js dependencies and project metadata.
 
 ## Troubleshooting
@@ -250,3 +287,4 @@ Confirm that MySQL is running, the credentials in `server.js` are correct, and t
 ### Dashboard content is not updating
 
 Refresh the dashboard after publishing. The dashboard loads published updates from `GET /api/updates` when the page opens.
+
