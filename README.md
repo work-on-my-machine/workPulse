@@ -1,65 +1,50 @@
 # WorkPulse
 
-WorkPulse is an employee opportunity and information hub. Users can discover hiring opportunities, employee announcements, and policy updates in one dashboard. Administrators can publish and manage that content from a separate portal.
+WorkPulse is an internal workspace for employee accounts, company updates, and administrator tools. Employees can register or sign in to view opportunities, announcements, and policy updates. People-team admins publish updates, and developer admins manage access and moderation.
 
 ## Project flowchart
 
 ```mermaid
 flowchart TD
-  A[Visitor opens WorkPulse] --> B[Landing page]
-  B -->|Join as a user| C[Registration page]
-  B -->|Already registered| D[User sign-in]
-  B -->|Open admin portal| E[Admin portal]
+  A[Visitor opens WorkPulse] --> B[Workspace landing page]
+  B -->|Employee| C[Employee dashboard]
+  B -->|People team| D[Admin portal]
+  B -->|Developer team| E[Access management]
 
-  C --> C1{Valid details?}
-  C1 -->|No| C2[Show validation error]
-  C1 -->|Yes| F[POST /api/register]
-  F --> G[(MySQL users table)]
-  F --> H[Store user in browser localStorage]
-  H --> I[Employee dashboard]
+  C --> C1{Signed in?}
+  C1 -->|No| F[Sign in or create account]
+  C1 -->|Yes| G[Browse updates and opportunities]
+  F --> H[POST /api/login or /api/register]
+  H --> I[(MySQL users table)]
+  H --> G
+  G --> J[GET /api/updates]
+  J --> K[(MySQL announcements table)]
+  G --> L[Save items in browser storage]
 
-  D --> D1{Valid credentials?}
-  D1 -->|No| D2[Show sign-in error]
-  D1 -->|Yes| J[POST /api/login]
-  J --> G
-  J --> K[Store signed-in user in localStorage]
-  K --> I
+  D --> D1[Enter individual admin key]
+  D1 --> D2{Key valid?}
+  D2 -->|No| D3[Show access error]
+  D2 -->|Yes| M[Admin publishing workspace]
+  M --> N[Publish or manage own updates]
+  N --> O[Admin API]
+  O --> K
+  M --> P[Create administrator]
+  P --> Q[POST /api/admin/admins]
+  Q --> R[(MySQL admins table)]
 
-  I --> L[Load public updates]
-  L --> M[GET /api/updates]
-  M --> N[(MySQL announcements table)]
-  I --> O[Search and filter]
-  I --> P[Read details]
-  I --> Q[Save or unsave item]
-  Q --> R[(Browser localStorage saved items)]
-  I --> S[Sign out]
-  S --> D
-
-  E --> E1[Enter individual admin key]
-  E1 --> E2{Key valid?}
-  E2 -->|No| E3[Show access error]
-  E2 -->|Yes| T[(MySQL admins table)]
-  T --> U[Admin workspace]
-  U --> V[Publish job, announcement, or policy]
-  V --> W[POST /api/admin/updates]
-  W --> N
-  U --> X[View or delete published updates]
-  X --> Y[GET or DELETE /api/admin/updates]
-  Y --> N
-  U --> Z[Add another administrator]
-  Z --> AA[POST /api/admin/admins]
-  AA --> T
-  N --> I
+  E --> E1[Authenticate with access credentials]
+  E1 --> S[Review users, admins, and published content]
+  S --> T[Remove access or moderate content]
+  T --> U[Access-management API]
 ```
 
 ### Flow summary
 
-1. Visitors choose whether they are a user or an administrator from the landing page.
-2. Users register or sign in, then reach the personalized employee dashboard.
-3. The dashboard loads published content from the announcements table and stores saved items in browser storage.
-4. Administrators authenticate with their own key and publish jobs, announcements, or policies.
-5. Published admin content becomes available to employees through the public updates API.
-6. Authenticated administrators can add more administrators with separate keys.
+1. Employees open the dashboard. If they are not signed in, they are sent to the sign-in page, which also links to registration.
+2. Employee accounts and published updates are stored in MySQL; the dashboard saves the signed-in profile and saved items in browser storage.
+3. People-team admins use individual admin keys to publish and manage updates.
+4. Developer admins use the separate access-management page to review and remove users, admins, or published content.
+5. The access-management page runs on its own local port and uses the main app's API.
 
 ## Features
 
@@ -75,6 +60,8 @@ The root URL provides three workspace choices:
 
 - User registration with name, email, password, and password confirmation.
 - User sign-in with email and password.
+- The dashboard redirects unsigned visitors to sign-in; the sign-in page links to account creation.
+- Passwords are salted and hashed by the server before they are stored.
 - Personalized dashboard greeting using the user's name.
 - Time-based greeting: morning, afternoon, or evening.
 - Automatic current date display.
@@ -85,7 +72,7 @@ The root URL provides three workspace choices:
 - Save and unsave updates with the star button.
 - Saved items list in the dashboard sidebar.
 - Sign out from the account control.
-- Weekly digest button with confirmation feedback.
+- The weekly digest control currently displays confirmation feedback; no email delivery service is connected.
 
 Saved items and the signed-in user profile are stored in browser `localStorage` for the current browser.
 
@@ -93,14 +80,11 @@ Saved items and the signed-in user profile are stored in browser `localStorage` 
 
 The admin portal is available at `/admin.html`.
 
-The portal first asks for the administrator's individual key. After successful authentication, the admin sees only announcements published by that admin. The signed-in admin can publish, review, and delete their own updates.
+The portal first asks for the administrator's individual key. After successful authentication, the admin sees only announcements published by that admin. The signed-in admin can publish, review, and delete their own updates, and can log out from the portal header.
 
-The separate `/access-management.html` page requires the access administrator credentials:
+Use **Manage administrators** to create another admin account. After creation, the setup page provides a link to sign in to the publishing portal as that administrator.
 
-- Admin ID: `admin`
-- Password: `sameer,2005`
-
-These credentials are configurable with `ACCESS_ADMIN_ID` and `ACCESS_ADMIN_PASSWORD` environment variables.
+The access-management page is served separately at `http://localhost:3001/access-management.html`. Configure its administrator ID and password through the `ACCESS_ADMIN_ID` and `ACCESS_ADMIN_PASSWORD` environment variables before starting the main server. Do not store real credentials in source code or commit them to GitHub.
 
 Administrators can:
 
@@ -123,13 +107,13 @@ Each administrator has a separate name, email address, and admin key. Admin keys
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Landing page with user and admin choices |
+| `/` | Landing page with employee, admin, and developer choices |
 | `/index.html` | Employee dashboard |
 | `/register.html` | User registration |
 | `/login.html` | User sign-in |
 | `/admin.html` | Admin publishing and administrator management |
 | `/administrators.html` | Administrator creation and roster page |
-| `/access-management.html` | Dedicated page for removing admin access, users, and misleading content |
+| `http://localhost:3001/access-management.html` | Separate page for managing access and moderating content |
 
 ## Requirements
 
@@ -171,31 +155,24 @@ http://localhost:3001/access-management.html
 
 The access-management page runs separately, but uses the main application's API and database. Keep both Node.js terminals running while using it. MySQL runs separately as a Windows service or database process.
 
-## Local admin access
+## Configuration
 
-On first startup, the application creates the first administrator automatically if the `admins` table is empty.
-
-Default local admin key:
-
-```text
-local-workpulse-admin
-```
-
-Use it in the **Admin key** field on `/admin.html`.
-
-For a custom key, set `ADMIN_KEY` before starting the server:
+Set local secrets in the environment before starting the main server. The following PowerShell example uses placeholders; replace them with private values and do not commit real credentials:
 
 ```powershell
-$env:ADMIN_KEY = "replace-with-a-strong-local-key"
-node server.js
+$env:ADMIN_KEY = "replace-with-a-unique-admin-key"
+$env:ACCESS_ADMIN_ID = "replace-with-an-access-admin-id"
+$env:ACCESS_ADMIN_PASSWORD = "replace-with-a-strong-password"
+$env:PASSWORD_PEPPER = "replace-with-a-long-random-secret"
+npm start
 ```
 
-The existing local bootstrap administrator is created with:
+On startup, the app creates the primary administrator if the admins table is empty. The bootstrap account uses:
 
 - Name: `Primary Admin`
 - Email: `admin@workpulse.local`
 
-After signing in with an admin key, use the **Administrators** section to add more admins. New admin keys must contain at least 8 characters and must be unique.
+After signing in with an admin key, use the **Manage administrators** page to add admins. New admin keys must contain at least 8 characters and must be unique.
 
 ## API
 
@@ -207,11 +184,11 @@ After signing in with an admin key, use the **Administrators** section to add mo
 
 ### Public update endpoint
 
-- `GET /api/updates` returns published updates for the employee dashboard.
+- `GET /api/updates` returns published updates for the employee dashboard and other API consumers.
 
-### Admin endpoints
+### People-team admin endpoints
 
-Admin endpoints require the following request header:
+These endpoints require the following request header:
 
 ```text
 x-admin-key: your-admin-key
@@ -220,15 +197,21 @@ x-admin-key: your-admin-key
 Available endpoints:
 
 - `GET /api/admin/profile` returns the authenticated admin profile.
-- `GET /api/admin/updates` returns published updates.
+- `GET /api/admin/updates` returns that admin's published updates.
 - `POST /api/admin/updates` publishes an update.
-- `DELETE /api/admin/updates/:id` removes an update.
-- `GET /api/admin/admins` returns the administrator roster.
+- `DELETE /api/admin/updates/:id` removes one of that admin's updates.
+- `GET /api/admin/admins` returns the administrator roster. This endpoint also accepts developer access credentials.
 - `POST /api/admin/admins` creates another administrator.
-- `DELETE /api/admin/admins/:id` removes another administrator's access. An admin cannot remove their own access.
+
+### Developer access endpoints
+
+These endpoints require both `x-access-admin-id` and `x-access-admin-password` headers, configured with `ACCESS_ADMIN_ID` and `ACCESS_ADMIN_PASSWORD`:
+
+- `GET /api/admin/access-profile` verifies access-management credentials.
 - `GET /api/admin/users` returns registered users.
-- `DELETE /api/admin/users/:id` removes a registered user.
 - `GET /api/admin/moderation/updates` returns all published content for moderation.
+- `DELETE /api/admin/admins/:id` removes an administrator. The primary administrator cannot be removed.
+- `DELETE /api/admin/users/:id` removes a registered user.
 - `DELETE /api/admin/moderation/updates/:id` removes published content from the app.
 
 Example publish request:
@@ -260,7 +243,9 @@ The server creates the `app_db` database and these tables when it starts:
 
 Each announcement stores the owning `admin_id`, which keeps administrator newsroom views separate.
 
-The current local MySQL connection is configured in `server.js`. Before production use, move database credentials and secrets to environment variables, set a strong `PASSWORD_PEPPER`, use HTTPS, and replace the simple admin-key header with a full authenticated admin session.
+The current local MySQL connection is configured in `server.js`. It is intended for local development. Before production use, change the database configuration to use environment-backed credentials, set a strong `PASSWORD_PEPPER`, use HTTPS, and replace browser-stored employee identity and the simple admin-key header with server-side authenticated sessions.
+
+The employee dashboard's sign-in check is client-side and is not a security boundary for sensitive data. The current app is a local-development prototype, not a production identity system.
 
 ## Project files
 
@@ -271,6 +256,7 @@ The current local MySQL connection is configured in `server.js`. Before producti
 - `login.html` / `login.js`: user sign-in.
 - `admin.html` / `admin.css` / `admin.js`: admin publishing portal.
 - `administrators.html` / `administrators.js`: administrator creation and roster page.
+- `access-management-server.js`: separate static server for the developer access-management page.
 - `access-management.html` / `access-management.js`: dedicated removal and moderation page.
 - `package.json`: Node.js dependencies and project metadata.
 
@@ -278,13 +264,17 @@ The current local MySQL connection is configured in `server.js`. Before producti
 
 ### Admin publish returns an access error
 
-Use the correct admin key. The default local key is `local-workpulse-admin`. If an old key is cached in the browser session, refresh the page and enter the current key again.
+Set `ADMIN_KEY` before starting the server and use that value in the admin portal. If the key has changed, refresh the page and sign in again.
 
 ### Database startup fails
 
-Confirm that MySQL is running, the credentials in `server.js` are correct, and the MySQL user can create the `app_db` database.
+Confirm that MySQL is running, the local connection settings in `server.js` are correct, and the MySQL user can create the `app_db` database.
 
 ### Dashboard content is not updating
 
 Refresh the dashboard after publishing. The dashboard loads published updates from `GET /api/updates` when the page opens.
+
+## Tests
+
+There is no automated test suite configured yet. `npm test` is currently a placeholder.
 
