@@ -3,76 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Stay current with employee schemes, policy updates and job opportunities.">
-    <title>WorkPulse | Your work, up to date</title>
-    <script>
-        if (!localStorage.getItem("workpulse-user")) window.location.replace("login.html");
-    </script>
+    <meta name="theme-color" content="#111815">
+    <meta name="description" content="A personal space to write, reflect, and keep becoming.">
+    <title>Better In Me | A personal journal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="journal.css">
 </head>
 <body>
     <div class="app-shell">
         <aside class="sidebar">
-            <a class="brand" href="#top"><span class="brand-mark">W</span><span>workpulse</span></a>
-            <p class="eyebrow sidebar-label">Workspace</p>
-            <nav class="main-nav" aria-label="Main navigation">
-                <a class="nav-item active" href="#top"><span>◈</span> Overview</a>
-                <a class="nav-item" href="#announcements"><span>◌</span> Announcements <b>4</b></a>
-                <a class="nav-item" href="#opportunities"><span>↗</span> Opportunities</a>
-                <a class="nav-item" href="#policies"><span>▤</span> Policy desk</a>
-                <a class="nav-item" href="#saved"><span>☆</span> Saved items</a>
+            <a class="brand" href="#top" aria-label="Better In Me home"><span class="brand-mark">b.</span><span>Better In Me</span></a>
+            <p class="eyebrow sidebar-label">Your space</p>
+            <nav class="main-nav" aria-label="Journal views">
+                <button class="nav-item active" type="button" data-view="all" aria-label="All entries" title="All entries"><span aria-hidden="true">▤</span> All entries</button>
+                <button class="nav-item" type="button" data-view="favorites" aria-label="Favorites" title="Favorites"><span aria-hidden="true">☆</span> Favorites</button>
+                <button class="nav-item gym-nav-item" type="button" id="gym-nav-button" aria-label="Gym recorder" title="Gym recorder"><span aria-hidden="true">◈</span> Gym recorder</button>
+                <button class="nav-item" type="button" id="faith-nav-button" aria-label="Faith" title="Faith"><span aria-hidden="true">✧</span> Faith</button>
             </nav>
-            <div class="sidebar-footer"><span class="status-dot"></span> Updates are live</div>
+            <div class="sidebar-note"><span class="note-mark" aria-hidden="true">✳</span><p>A little space to notice how far you’ve come.</p></div>
+            <div class="sidebar-footer"><span class="status-dot"></span> Private to your account</div>
         </aside>
 
         <main class="main-content" id="top">
             <header class="topbar">
-                <div class="mobile-brand"><span class="brand-mark">W</span> workpulse</div>
-                <div class="topbar-actions">
-                    <a class="home-button" href="/"><span aria-hidden="true">⌂</span>Home</a>
-                    <button class="icon-button" aria-label="Notifications">♢<span class="notification-dot"></span></button>
-                    <a class="profile-chip" id="account-link" href="login.html"><span class="avatar" id="profile-avatar">AM</span><span class="profile-name" id="profile-name">Sign in</span><span>↗</span></a>
+                <div class="mobile-brand"><span class="brand-mark">b.</span><span>Better In Me</span></div>
+                <div class="backup-actions">
+                    <span class="account-name" id="account-name"></span>
+                    <button class="quiet-button signout-button" id="signout-button" type="button">Sign out</button>
                 </div>
             </header>
 
+            <div id="journal-panel">
             <section class="welcome-row">
-                <div><p class="eyebrow" id="current-date">Tuesday, 23 September 2026</p><h1><span id="greeting">Good morning</span>, <span id="user-name">Aarav</span> <span class="wave">✦</span></h1><p class="welcome-copy">Here is what is changing in your work world today.</p></div>
-                <button class="primary-button" id="digest-button"><span>✧</span> Get my weekly digest</button>
+                <div>
+                    <p class="eyebrow" id="current-date"></p>
+                    <h1>A quieter place to <em>hear yourself think.</em></h1>
+                    <p class="welcome-copy">Write it down. Let it be yours.</p>
+                </div>
+                <div class="entry-count"><strong id="entry-count">0</strong><span id="entry-count-label">entries kept</span></div>
             </section>
 
-            <section class="stats-grid" aria-label="Your update summary">
-                <article class="stat-card accent-coral"><span class="stat-icon">◉</span><div><strong>12</strong><p>New this week</p></div><span class="stat-trend">+4</span></article>
-                <article class="stat-card accent-blue"><span class="stat-icon">↗</span><div><strong>28</strong><p>Open opportunities</p></div><span class="stat-trend">+8%</span></article>
-                <article class="stat-card accent-yellow"><span class="stat-icon">▤</span><div><strong>06</strong><p>Policy changes</p></div><span class="stat-trend">2 urgent</span></article>
+            <section class="composer" aria-labelledby="composer-heading">
+                <div class="composer-heading"><span class="step-mark">01</span><div><p class="eyebrow">Make a moment of it</p><h2 id="composer-heading">Start with what’s on your mind.</h2></div></div>
+                <form id="entry-form">
+                    <label class="visually-hidden" for="entry-title">Entry title</label>
+                    <input id="entry-title" name="title" maxlength="100" placeholder="Give this moment a name (optional)" autocomplete="off">
+                    <label class="visually-hidden" for="entry-body">Your journal entry</label>
+                    <textarea id="entry-body" name="body" rows="5" maxlength="10000" placeholder="Start anywhere. What happened, what mattered, or what you want to remember…" required></textarea>
+                    <div class="composer-bottom">
+                        <fieldset class="mood-picker">
+                            <legend>Right now, I feel</legend>
+                            <div class="mood-options">
+                                <label><input type="radio" name="mood" value="Calm"><span>Calm</span></label>
+                                <label><input type="radio" name="mood" value="Good" checked><span>Good</span></label>
+                                <label><input type="radio" name="mood" value="Mixed"><span>Mixed</span></label>
+                                <label><input type="radio" name="mood" value="Low"><span>Low</span></label>
+                                <label><input type="radio" name="mood" value="Grateful"><span>Grateful</span></label>
+                            </div>
+                        </fieldset>
+                        <div class="form-actions"><button class="cancel-button hidden" id="cancel-edit" type="button">Cancel</button><button class="primary-button" id="save-button" type="submit">Save entry <span aria-hidden="true">↗</span></button></div>
+                    </div>
+                </form>
             </section>
 
-            <section class="toolbar" aria-label="Search and filter updates">
-                <div class="search-wrap"><span>⌕</span><input id="search-input" type="search" placeholder="Search announcements, jobs, policies..." aria-label="Search updates"></div>
-                <div class="filter-tabs" role="tablist"><button class="filter-tab active" data-filter="all">All updates</button><button class="filter-tab" data-filter="announcement">Announcements</button><button class="filter-tab" data-filter="job">Jobs</button><button class="filter-tab" data-filter="policy">Policies</button></div>
+            <section class="entries-section" aria-labelledby="entries-heading">
+                <div class="section-heading">
+                    <div><p class="eyebrow" id="list-eyebrow">Your reflections</p><h2 id="entries-heading">The little things add up.</h2></div>
+                    <label class="search-wrap"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="Find an entry" aria-label="Search your entries"></label>
+                </div>
+                <div class="entry-list" id="entry-list" aria-live="polite"></div>
+                <div class="empty-state" id="empty-state"><span class="empty-mark" aria-hidden="true">✳</span><h3 id="empty-heading">Your first page is waiting.</h3><p id="empty-copy">You don’t need the perfect words. Just begin with today.</p></div>
             </section>
-
-            <div class="content-grid">
-                <section class="feed-section" id="announcements">
-                    <div class="section-heading"><div><p class="eyebrow">Stay informed</p><h2>Latest updates</h2></div><button class="ghost-button" id="clear-filters">Reset filters <span>↗</span></button></div>
-                    <div class="update-list" id="update-list"></div>
-                    <p class="empty-state hidden" id="empty-state">No updates match your search. Try a different keyword.</p>
-                </section>
-
-                <aside class="right-rail">
-                    <section class="rail-section" id="opportunities"><div class="section-heading compact"><div><p class="eyebrow">Recommended for you</p><h2>Open roles</h2></div><button class="round-arrow" aria-label="View all jobs">→</button></div><div id="job-list" class="job-list"></div></section>
-                    <section class="rail-section policy-section" id="policies"><div class="section-heading compact"><div><p class="eyebrow">Worth a read</p><h2>Policy desk</h2></div><span class="live-label"><i></i> Live</span></div><div class="policy-highlight"><span class="policy-number">01</span><div><strong>Paid parental leave expanded</strong><p>New eligibility rules take effect from 01 Oct 2026.</p><button class="text-button" data-detail="parental">Read the update <span>→</span></button></div></div></section>
-                    <section class="saved-section" id="saved"><div class="section-heading compact"><h2>Your saved items</h2><span id="saved-count">0</span></div><p id="saved-copy">Save an update to find it quickly later.</p><div id="saved-list" class="saved-list"></div></section>
-                </aside>
             </div>
-            <footer class="footer"><span>workpulse</span><span>Information you can act on.</span><span>Last synced 4 mins ago</span></footer>
+
+            <section class="workout-panel hidden" id="workout-panel" aria-labelledby="workout-heading">
+                <div class="workout-welcome">
+                    <div><p class="eyebrow" id="workout-current-date"></p><h1>Train with <em>intention.</em></h1><p class="welcome-copy">A private record of the work you put in.</p></div>
+                    <div class="entry-count"><strong id="workout-count">0</strong><span>exercises logged</span></div>
+                </div>
+                <section class="workout-insights" aria-label="Workout visualizations">
+                    <div class="insights-grid">
+                        <section class="insight-chart" aria-labelledby="progress-heading">
+                            <div class="insight-heading"><div><p class="eyebrow">Strength over time</p><h2 id="progress-heading">Exercise progress</h2></div><div class="chart-controls"><label>Exercise<select id="progress-exercise"></select></label><label>Metric<select id="progress-metric"><option value="weight">Load (kg)</option><option value="reps">Reps per set</option><option value="total-reps">Total reps</option></select></label></div></div>
+                            <div id="progress-chart" class="progress-chart" aria-live="polite"></div>
+                        </section>
+                        <section class="insight-chart muscle-insight" aria-labelledby="muscle-chart-heading">
+                            <div><p class="eyebrow">Training balance</p><h2 id="muscle-chart-heading">Muscle focus</h2></div>
+                            <div id="muscle-chart" class="muscle-chart" aria-live="polite"></div>
+                        </section>
+                    </div>
+                </section>
+                <section class="composer workout-composer" aria-labelledby="workout-heading">
+                    <div class="composer-heading"><span class="step-mark">GYM</span><div><p class="eyebrow">Your training record</p><h2 id="workout-heading">Log an exercise.</h2></div></div>
+                    <form id="workout-form">
+                        <div class="workout-fields">
+                            <label class="workout-field exercise-field">Exercise
+                                <select id="workout-exercise" name="exercise" required>
+                                    <optgroup label="Chest">
+                                        <option data-muscle="Chest">Barbell bench press</option><option data-muscle="Chest">Dumbbell bench press</option><option data-muscle="Chest">Incline dumbbell press</option><option data-muscle="Chest">Chest dips</option><option data-muscle="Chest">Cable chest fly</option><option data-muscle="Chest">Push-up</option>
+                                    </optgroup>
+                                    <optgroup label="Back">
+                                        <option data-muscle="Back">Deadlift</option><option data-muscle="Back">Pull-up</option><option data-muscle="Back">Lat pulldown</option><option data-muscle="Back">Barbell row</option><option data-muscle="Back">Seated cable row</option><option data-muscle="Back">Single-arm dumbbell row</option><option data-muscle="Back">Back extension</option>
+                                    </optgroup>
+                                    <optgroup label="Traps">
+                                        <option data-muscle="Traps">Barbell shrug</option><option data-muscle="Traps">Dumbbell shrug</option><option data-muscle="Traps">Cable shrug</option><option data-muscle="Traps">Upright row</option>
+                                    </optgroup>
+                                    <optgroup label="Shoulders">
+                                        <option data-muscle="Shoulders">Overhead press</option><option data-muscle="Shoulders">Dumbbell shoulder press</option><option data-muscle="Shoulders">Lateral raise</option><option data-muscle="Shoulders">Front raise</option><option data-muscle="Shoulders">Reverse fly</option><option data-muscle="Shoulders">Face pull</option>
+                                    </optgroup>
+                                    <optgroup label="Rotator cuff">
+                                        <option data-muscle="Rotator cuff">Cable external rotation</option><option data-muscle="Rotator cuff">Side-lying external rotation</option><option data-muscle="Rotator cuff">Band external rotation</option><option data-muscle="Rotator cuff">Cable internal rotation</option>
+                                    </optgroup>
+                                    <optgroup label="Biceps">
+                                        <option data-muscle="Biceps">Barbell curl</option><option data-muscle="Biceps">Dumbbell curl</option><option data-muscle="Biceps">Hammer curl</option><option data-muscle="Biceps">Preacher curl</option><option data-muscle="Biceps">Cable curl</option>
+                                    </optgroup>
+                                    <optgroup label="Triceps">
+                                        <option data-muscle="Triceps">Triceps pushdown</option><option data-muscle="Triceps">Overhead triceps extension</option><option data-muscle="Triceps">Skull crusher</option><option data-muscle="Triceps">Close-grip bench press</option><option data-muscle="Triceps">Triceps dip</option>
+                                    </optgroup>
+                                    <optgroup label="Forearms">
+                                        <option data-muscle="Forearms">Wrist curl</option><option data-muscle="Forearms">Reverse wrist curl</option><option data-muscle="Forearms">Farmer carry</option><option data-muscle="Forearms">Reverse curl</option>
+                                    </optgroup>
+                                    <optgroup label="Core">
+                                        <option data-muscle="Core">Plank</option><option data-muscle="Core">Hanging leg raise</option><option data-muscle="Core">Cable crunch</option><option data-muscle="Core">Ab wheel rollout</option><option data-muscle="Core">Russian twist</option><option data-muscle="Core">Pallof press</option>
+                                    </optgroup>
+                                    <optgroup label="Quadriceps">
+                                        <option data-muscle="Quadriceps">Barbell squat</option><option data-muscle="Quadriceps">Front squat</option><option data-muscle="Quadriceps">Leg press</option><option data-muscle="Quadriceps">Leg extension</option><option data-muscle="Quadriceps">Bulgarian split squat</option><option data-muscle="Quadriceps">Walking lunge</option>
+                                    </optgroup>
+                                    <optgroup label="Hamstrings">
+                                        <option data-muscle="Hamstrings">Romanian deadlift</option><option data-muscle="Hamstrings">Lying leg curl</option><option data-muscle="Hamstrings">Seated leg curl</option><option data-muscle="Hamstrings">Good morning</option><option data-muscle="Hamstrings">Nordic curl</option>
+                                    </optgroup>
+                                    <optgroup label="Adductors">
+                                        <option data-muscle="Adductors">Hip adduction machine</option><option data-muscle="Adductors">Copenhagen side plank</option><option data-muscle="Adductors">Lateral lunge</option><option data-muscle="Adductors">Sumo squat</option>
+                                    </optgroup>
+                                    <optgroup label="Abductors">
+                                        <option data-muscle="Abductors">Hip abduction machine</option><option data-muscle="Abductors">Cable hip abduction</option><option data-muscle="Abductors">Band lateral walk</option><option data-muscle="Abductors">Clamshell</option>
+                                    </optgroup>
+                                    <optgroup label="Glutes">
+                                        <option data-muscle="Glutes">Hip thrust</option><option data-muscle="Glutes">Glute bridge</option><option data-muscle="Glutes">Cable kickback</option><option data-muscle="Glutes">Step-up</option><option data-muscle="Glutes">Sumo deadlift</option>
+                                    </optgroup>
+                                    <optgroup label="Calves">
+                                        <option data-muscle="Calves">Standing calf raise</option><option data-muscle="Calves">Seated calf raise</option><option data-muscle="Calves">Leg press calf raise</option>
+                                    </optgroup>
+                                    <optgroup label="Tibialis">
+                                        <option data-muscle="Tibialis">Tibialis raise</option><option data-muscle="Tibialis">Band dorsiflexion</option><option data-muscle="Tibialis">Toe raise</option>
+                                    </optgroup>
+                                    <optgroup label="Neck">
+                                        <option data-muscle="Neck">Neck curl</option><option data-muscle="Neck">Neck extension</option><option data-muscle="Neck">Lateral neck flexion</option>
+                                    </optgroup>
+                                    <optgroup label="Full body">
+                                        <option data-muscle="Full body">Kettlebell swing</option><option data-muscle="Full body">Burpee</option><option data-muscle="Full body">Clean and press</option><option data-muscle="Full body">Medicine ball slam</option>
+                                    </optgroup>
+                                </select>
+                                <span class="selected-muscle" id="selected-muscle">Chest</span>
+                            </label>
+                            <label class="workout-field">Date<input id="workout-date" name="performedAt" type="date" required></label>
+                            <label class="workout-field">Sets<input name="sets" type="number" min="1" max="20" value="3" required></label>
+                            <label class="workout-field">Reps per set<input name="reps" type="number" min="1" max="100" value="10" required></label>
+                            <label class="workout-field">Load<input name="weight" type="number" min="0" max="9999" step="0.5" value="0" required></label>
+                            <label class="workout-field">Unit<select name="weightUnit"><option value="kg">kg</option><option value="lb">lb</option></select></label>
+                        </div>
+                        <label class="workout-field notes-field">Notes <span class="optional-label">Optional</span><textarea name="notes" rows="2" maxlength="500" placeholder="Form cues, effort, or how it felt"></textarea></label>
+                        <div class="workout-submit-row"><span class="workout-hint">Bodyweight or unweighted movement? Keep load at 0.</span><button class="primary-button" type="submit">Save workout <span aria-hidden="true">↗</span></button></div>
+                    </form>
+                </section>
+                <section class="workout-history" aria-labelledby="workout-history-heading">
+                    <div class="section-heading"><div><p class="eyebrow">Your training, over time</p><h2 id="workout-history-heading">Workout history</h2></div><label class="workout-filter">Muscle group<select id="workout-filter"><option value="all">All groups</option><option>Chest</option><option>Back</option><option>Traps</option><option>Shoulders</option><option>Rotator cuff</option><option>Biceps</option><option>Triceps</option><option>Forearms</option><option>Core</option><option>Quadriceps</option><option>Hamstrings</option><option>Adductors</option><option>Abductors</option><option>Glutes</option><option>Calves</option><option>Tibialis</option><option>Neck</option><option>Full body</option></select></label></div>
+                    <div class="workout-list" id="workout-list" aria-live="polite"></div>
+                    <div class="empty-state" id="workout-empty"><span class="empty-mark" aria-hidden="true">✳</span><h3>No workouts recorded yet.</h3><p>Choose an exercise above to start your training history.</p></div>
+                </section>
+            </section>
+            <section class="faith-panel hidden" id="faith-panel" aria-labelledby="faith-heading">
+                <header class="faith-welcome">
+                    <p class="eyebrow" id="faith-current-date"></p>
+                    <h1 id="faith-heading">Words to <em>return to.</em></h1>
+                    <p class="welcome-copy">Choose a Qur’an verse or a hadith, with its source close at hand.</p>
+                </header>
+                <section class="faith-content" aria-labelledby="faith-heading">
+                    <div class="faith-controls">
+                        <div class="faith-switch" role="group" aria-label="Reminder source">
+                            <button class="faith-switch-button active" type="button" data-reminder-type="quran" aria-pressed="true">Qur’an verse</button>
+                            <button class="faith-switch-button" type="button" data-reminder-type="hadith" aria-pressed="false">Hadith</button>
+                        </div>
+                        <button class="next-reminder" id="next-reminder" type="button">Another reminder <span aria-hidden="true">↗</span></button>
+                    </div>
+                    <article class="reminder-card" id="reminder-card" aria-live="polite" aria-atomic="true"></article>
+                    <p class="faith-note">Translations are shown with their source. Hadith excerpts include collection references and grading.</p>
+                </section>
+            </section>
+            <footer class="footer"><span>Better In Me</span><span>Your journal and workouts are saved to your account.</span><span>Developer: Mohammad Sameer | <a href="https://repo-one-red.vercel.app/" target="_blank" rel="noreferrer">Portfolio</a> | <a href="mailto:sameerdigitally@gmail.com?subject=Hello%20Mohammad">sameerdigitally@gmail.com</a></span></footer>
         </main>
     </div>
-    <div class="toast" id="toast" role="status"></div>
-    <div class="detail-drawer" id="detail-drawer" aria-hidden="true"><button class="close-button" id="close-drawer" aria-label="Close details">×</button><div id="drawer-content"></div></div>
-    <div class="drawer-backdrop" id="drawer-backdrop"></div>
-    <script src="script.js"></script>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="journal.js"></script>
 </body>
 </html>
